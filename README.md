@@ -1,5 +1,5 @@
 Evan-Code-Examples
 ==================
 
-Examples for potential employers of my code.
+Examples of code by Evan Cusick.
 
