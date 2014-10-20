@@ -1,0 +1,41 @@
+<?php
+//will update scanned status to true after successful scanning 
+if(isset($_POST['locationID'])){
+$thisLocationId= $_POST['locationID'];
+}
+else{
+$thisLocationId='gr70311';
+}
+if(isset($_POST['userName'])){
+$thisUserName= $_POST['userName'];
+}
+else{
+$thisUserName='EC100';
+}
+if(isset($_POST['huntID'])){
+$thisHuntId=$_POST['huntID'];
+}
+else{
+$thisHuntId='TQ25672';
+}
+
+$con = mysqli_connect('web2.eeecs.qub.ac.uk','40050209','DUV7874', '40050209'); 
+if(!$con){
+	die('not connected: '. mysql_error());
+}
+
+//select database
+mysqli_select_db($con, '40050209');
+
+if(!$con){
+	die('not connected: '. mysql_error());
+}
+
+//update scanned status to true
+$updateScanned= "UPDATE player_locations set scanned_status ='true' where 
+Player_Location_id='$thisLocationId' and  Player_Username='$thisUserName'";
+
+//execute queries
+mysqli_query($con,$updateScanned);
+mysqli_close($con);
+?>
