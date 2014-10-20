@@ -1,0 +1,295 @@
+package ecusick01.tresurehunt;
+
+
+/**
+ * Will show all the locations of a hunt and inform the user of their progress
+ * on completing it pressing finish will submit the details for the leader board
+ * 
+ * @author EVAN
+ * 
+ */
+public class ViewHuntLocations extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_view_hunt_locations);
+		// initialise variables
+		Title = (TextView) findViewById(R.id.ViewLocMainTitle);
+		huntName = getIntent().getStringExtra("huntName");
+		huntId = getIntent().getStringExtra("huntID");
+		String display = "Your Progress on " + huntName;
+		Title.setText(display);
+
+		locationRow1 = (TableRow) findViewById(R.id.tableRow1);
+	 Instnatiate Views etc.....
+
+
+		LoggedInMessage = (TextView) findViewById(R.id.ViewLocationsWelcomeText);
+		username = LoginActivity.loggedInUserName;
+		String welcome = "Logged in as: " + username;
+		LoggedInMessage.setText(welcome);
+
+		// check if device has a network connection
+		if (ConfigurationAndMessages.isNetworkAvailable(this)) {
+			// set creator username via GetCreatorName
+		Launch Async threads...
+		} else {
+		//error......
+
+		}
+
+		// button and listener for when hunt is submitted
+		submitBtn = (Button) findViewById(R.id.submitHuntBtn);
+		submitBtn.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// now call the finish user hunt class
+				if (ConfigurationAndMessages
+						.isNetworkAvailable(ViewHuntLocations.this)) {
+					userFinishHunt UFH = new userFinishHunt();
+					UFH.execute(huntId, username);
+
+				} else {
+					// if network connection fails show error message
+				}
+			}
+
+		});
+
+	}
+
+	
+
+	/**
+	 * This Method sets the UI depending the on the status of the scanned and
+	 * question status arrays obtained from the database
+	 */
+	public void setPlayerUI() {
+
+		// so that if True the clue is not click_able and question status is
+		// and vice versa
+		for (int loop = 0; loop < scannedStatusArray.length; loop++) {
+
+			if (scannedStatusArray[loop]) {
+				// set found state
+				QrStatusViewsArray[loop].setClickable(false);
+				QrStatusViewsArray[loop].setText(CODE_FOUND);
+				QrStatusViewsArray[loop].setTextColor(Color.RED);
+
+				QuestionStatusViewsArray[loop].setClickable(true);
+				// if a question has been submitted then set to edit state
+				// other
+				// otherwise it is in answered state
+				if (questionStatusArray[loop]) {
+					QuestionStatusViewsArray[loop].setText(CHANGE_ANSWER);
+					int orange = getResources().getColor(R.color.orange);
+					QuestionStatusViewsArray[loop].setTextColor(orange);
+
+				} else {
+					QuestionStatusViewsArray[loop].setText(ANSWER_QUESTION);
+					QuestionStatusViewsArray[loop].setTextColor(Color.GREEN);
+				}
+
+			} else {
+				// set not found state
+				QrStatusViewsArray[loop].setClickable(true);
+				QrStatusViewsArray[loop].setText(VIEW_CLUE);
+				QrStatusViewsArray[loop].setTextColor(Color.GREEN);
+				QuestionStatusViewsArray[loop].setClickable(false);
+				// set text on question element
+				QuestionStatusViewsArray[loop].setText(FIND_CODE);
+				QuestionStatusViewsArray[loop].setTextColor(Color.RED);
+			}
+
+			dialog.dismiss();
+
+		}
+
+	}
+
+	/**
+	 * when help button is pressed the help text dialog will open
+	 * 
+	 * @param view
+	 */
+	public void showHelp(View view) {
+		Intent I = new Intent(this, HelpText.class);
+		startActivity(I);
+
+	}
+
+	/**
+	 * When home button is pressed it will open the home page
+	 */
+	public void showHomePage(View view) {
+		Intent I = new Intent(this, MainPlayerPage.class);
+		startActivity(I);
+
+	}
+
+	/**
+	 * When logout button is pressed this method will open the login screen
+	 */
+	public void showLoginScreen(View view) {
+		Intent I = new Intent(this, LoginActivity.class);
+		startActivity(I);
+
+	}
+
+	/**
+	 * Will View the Clue to where the QR code is, when view Clue is clicked. If
+	 * the Code is already scanned by the player this element will not be
+	 * click-able
+	 * 
+	 * @param view
+	 */
+	public void showClue(View view) {
+		// first get the location id and name and pass them with
+		// intent
+		String nameToPass;
+		String idToPass;
+
+		switch (view.getId()) {
+		case R.id.QrStatus1:
+			nameToPass = locationName1;
+			idToPass = locationID1;
+			break;
+		case R.id.QrStatus2:
+			nameToPass = locationName2;
+			idToPass = locationID2;
+			break;
+		etc...
+		}
+		// create intent to pass the id and name to Show Questions
+		Intent intent = new Intent(this, ViewClue.class);
+		put variables in intent.....
+		startActivity(intent);
+	}
+
+
+	/**
+	 * ------CLASS WILL GET THE TRUE OR FALSE STATUS OF WHETHER THE QR CODE IS
+	 * SCANNED AND IF THE QUESTIONS ARE SUBMITTED FOR EACH LOCATION------
+	 * 
+	 */
+	public class GetPlayerLocationStatus extends
+			AsyncTask<String, String, String> {
+
+		/**
+		 * When executed this method will get all the players status for all
+		 * location on this treasure hunt
+		 * 
+		 * @return
+		 */
+		@Override
+		protected String doInBackground(String... params) {
+			String result = "";
+			InputStream isr = null;
+			// error in Async task can't return void
+			String bug = "bug";
+
+			// Will send the treasure Hunt Id
+			List<NameValuePair> information = new ArrayList<NameValuePair>();
+			information.add(new BasicNameValuePair("huntID", params[0]));
+			information.add(new BasicNameValuePair("Username", params[1]));
+			try {
+				HttpClient httpclient = new DefaultHttpClient();
+				HttpPost httppost = new HttpPost(
+						ConfigurationAndMessages
+								.HTTPURL(ViewHuntLocations.this)
+								+ "GetUserLocationStatus.php");
+				// send the userName via post
+				httppost.setEntity(new UrlEncodedFormEntity(information));
+				HttpResponse response = httpclient.execute(httppost);
+				HttpEntity entity = response.getEntity();
+				isr = entity.getContent();
+			} catch (Exception e) {
+				Log.e("log_tag", "GetPlayerLocationStatus connection Error: "
+						+ e.toString());
+			}
+
+			// convert response to string
+
+			try {
+				BufferedReader reader = new BufferedReader(
+						new InputStreamReader(isr, "iso-8859-1"), 8);
+				StringBuilder sb = new StringBuilder();
+				String line = null;
+				while ((line = reader.readLine()) != null) {
+					sb.append(line + "\n");
+				}
+
+				isr.close();
+				result = sb.toString();
+				Log.i("GetPlayerLocationStatus JSON Parser", result);
+			} catch (Exception e) {
+				Log.e("log_tag",
+						"GetPlayerLocationStatus parsing error: "
+								+ e.toString());
+			}
+
+			// get the location values for the json Array
+			try {
+				JSONArray jArray = new JSONArray(result);
+				int arrayLength = jArray.length();
+
+				locationNumsArray = new Integer[arrayLength];
+				scannedStatusArray = new Boolean[arrayLength];
+				questionStatusArray = new Boolean[arrayLength];
+
+				for (int loop = 0; loop < arrayLength; loop++) {
+					JSONObject json = jArray.getJSONObject(loop);
+					Boolean scannedHolder = Boolean.valueOf(json
+							.getString("scanned_status"));
+					Boolean qstatusHolder = Boolean.valueOf(json
+							.getString("question_status"));
+					scannedStatusArray[loop] = scannedHolder;
+					questionStatusArray[loop] = qstatusHolder;
+					locationNumsArray[loop] = json.getInt("location_no");
+
+				}
+				// map location number to the location Names and IDs
+				mapLocsScanStatus = new HashMap<Integer, Boolean>();
+				mapLocsQStatus = new HashMap<Integer, Boolean>();
+
+				for (int i = 0; i < locationNumsArray.length; i++) {
+					mapLocsScanStatus.put(locationNumsArray[i],
+							scannedStatusArray[i]);
+					mapLocsQStatus.put(locationNumsArray[i],
+							questionStatusArray[i]);
+				}
+			} catch (Exception e) {
+				Log.e("log_tag", "GetPlayerLocationStatus Error setting maps: "
+						+ e.toString());
+			}
+
+			return bug;
+
+		}
+
+		/**
+		 * will cycle through maps to set an array of booleans in order of
+		 * location number for both status'
+		 * **/
+		@Override
+		protected void onPostExecute(String s) {
+			// populate the two array with the location statuses in order
+			// so element 0 will be status (true or false) of location one
+			// in both cases
+			for (int loop = 0; loop < locationNumsArray.length; loop++) {
+				scannedStatusArray[loop] = mapLocsScanStatus.get(loop + 1);
+				questionStatusArray[loop] = mapLocsQStatus.get(loop + 1);
+			}
+
+			Log.i("GetPlayerLocationStatus: show ArraY Contents: ",
+					Arrays.toString(scannedStatusArray) + " "
+							+ Arrays.toString(questionStatusArray));
+
+			// set UI elements
+			setPlayerUI();
+
+		}
+
+	}
+}
