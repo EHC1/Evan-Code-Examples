@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<HTML>
+<LINK href="styles.css" rel="stylesheet" type="text/css">
+<?php
+if(isset ($_GET['huntName'])){
+$huntName= $_GET['huntName'];
+}
+if(isset ($_GET['huntId'])){
+$huntID= $_GET['huntId'];
+}
+$logoutPressed=isset($_POST['logout']);
+if(isset($_COOKIE['thisLogin']) and !$logoutPressed ){
+if($_COOKIE['thisLogin']==1){
+?>
+<Head>
+<title>View Location details</title>
+<?php 
+$currentUser =$_COOKIE['thisUserName'];
+?>
+</Head>
+<body>
+<div id="page">
+<div id="header">
+<h1 class="site-logo"><img src="../websitepictures/logo.jpg" height="55" width="58"
+> Treasure Hunt</h1>
+<form action="thDesignerMain.php" method="Post" class="logout-link">
+ <input type='submit' name= 'logout' id='logout' value='Logout!'>
+ </form>
+<p class="header-para">Logged in as:  
+<?php 
+$currentUser =$_COOKIE['thisUserName'];
+echo " ". $currentUser;
+?>
+</p>
+</div><!--header-->
+<div id='main'>
+<div id="sidebar">
+<!-- A default button-group with small buttons inside -->
+<ul class="button-group">
+<li><a href="EditAccount.php" class="button"> View and Edit Account Details</a></li>
+<li><a href="createNewTH.php" class="button">Create New Treasure Hunt</a></li>
+<li><a href="thDesignerMain.php" class="button">Home Page</a></li>
+<li><a href="aboutSitePage.html" class="button">About Website</a></li>
+<li><a href="contactDetails.html" class="button"> Contact Us!</a></li>
+</ul>
+</div><!--sidebar-->
+<?php
+$con = mysqli_connect('web2.eeecs.qub.ac.uk','40050209','DUV7874', '40050209');
+ 
+if(!$con){
+	die('not connected: '. mysql_error());
+}
+
+//select database
+mysqli_select_db($con, "40050209");
+
+if(!$con){
+	die('not connected: '. mysql_error());
+}
+//get all user treasure hunts that currently exist
+//then iterate through it and apply each id and name to variables
+$getLocations="Select  location_id, location_name,
+ location_no from location_details where hunt_id= '$huntID'";
+$counter=0;
+$locationsReturned = mysqli_query($con,$getLocations);
+while($records= mysqli_fetch_array($locationsReturned)){
+$counter++;
+$thisLocationName= $records['location_name'];
+$thisLocationId= $records ['location_id'];
+$locNoTrack= $records ['location_no'];
+Switch ($locNoTrack){
+case 1: $locationName1= $thisLocationName;
+	$locationId1= $thisLocationId;
+	break;
+case 2: $locationName2= $thisLocationName;
+	$locationId2= $thisLocationId;
+	break;
+case 3: $locationName3= $thisLocationName;
+	$locationId3= $thisLocationId;
+	break;
+case 4:$locationName4= $thisLocationName;
+	$locationId4= $thisLocationId;
+	break;
+case 5: $locationName5= $thisLocationName;
+	$locationId5= $thisLocationId;
+	break;
+case 6: $locationName6= $thisLocationName;
+	$locationId6= $thisLocationId;
+	break;
+case 7: $locationName7= $thisLocationName;
+	$locationId7= $thisLocationId;
+	break;
+case 8: $locationName8= $thisLocationName;
+	$locationId8= $thisLocationId;
+	break;
+case 9:$locationName9= $thisLocationName;
+	$locationId9= $thisLocationId;
+	break;
+case 10: $locationName10= $thisLocationName;
+	$locationId10= $thisLocationId;
+	break;
+}
+}
+mysqli_close($con);
+if($counter>0){
+?>
+<div id="content">
+<h2>Locations For <?php echo $huntName?></h2>
+<table>
+<tr>
+  <th>Location Name</th>
+  <th>Download QR Code</th> 
+  <th>Edit Clue Details</th> 
+  <th>Edit Question Details</th>
+  <th>Delete Location</th>
+</tr>
+<?php
+if(isset($locationName1)){
+?>
+<tr> 
+	<td><?php echo $locationName1 ?></td> 
+	<td><a href= "qrCodeDownload.php?locationId=<?php echo $locationId1?>&locationName=<?php echo $locationName1?>
+	&huntId=<?php echo $huntID?>"> Get QR Code</a></td>
+	<td><a href="EditClue.php?huntId=<?php echo $huntID?>&locationId=<?php echo $locationId1?>
+	&locationName=<?php echo $locationName1?>">Edit Clue</a></td>
+	<td><a href="EditQuestions.php?locationId=<?php echo $locationId1?>
+	&locationName=<?php echo $locationName1?>">Edit Questions</a></td>
+	<td><a href="DeleteLocation.php?locationId=<?php echo $locationId1?>&huntId=<?php echo $huntID?>
+	&huntName=<?php echo $huntName?>">
+	Click to Delete</a></td>
+</tr>
+<?php
+}
+if(isset($locationName2)){
+?>	
+<tr> 
+	<td><?php echo $locationName2 ?></td> 
+	<td><a href= "qrCodeDownload.php?locationId=<?php echo $locationId2?>&locationName=<?php echo $locationName2?>
+	&huntId=<?php echo $huntID?>"> Get QR Code</a></td>
+	<td><a href="EditClue.php?huntId=<?php echo $huntID?>&locationId=<?php echo $locationId2?>
+	&locationName=<?php echo $locationName2?>">Edit Clue</a></td>
+	<td><a href="EditQuestions.php?locationId=<?php echo $locationId2?>
+	&locationName=<?php echo $locationName2?>">Edit Questions</a></td>
+	<td><a href="DeleteLocation.php?locationId=<?php echo $locationId2?>&huntId=<?php echo $huntID?>
+	&huntName=<?php echo $huntName?>">
+	Click to Delete</a></td>
+</tr>	
+<?php
+}
+//etc...................................
+}
+?>
+</table>
+</br>
+<?php
+if($counter==0){
+?>
+<p class=notableelements> No locations for this treasure hunt yet.</p>
+<a class=notableelements href="WriteLocationDetails.php?thisHuntId=<?php echo $huntID?>&thisHuntName= 
+<?php echo $huntName?>">
+	Click here to add a new location</a>
+<?php
+}
+else if($counter <10){
+?>
+<a href="WriteLocationDetails.php?thisHuntId=<?php echo $huntID?>&thisHuntName= <?php echo $huntName?>">
+	Click here to add a new location</a>
+<?php
+	}
+	else{
+?>
+<p> Maximum number of locations added.</p>
+<?php	
+	}
+?>
+</div> <!-- #content-->
+</div>  <!-- #main-->
+<?php
+}
+else{
+//go to login screen
+header('Location: loginScreen.php');
+}
+}
+?>
+</body>
+</div><!-- #page-->
+</HTML>
